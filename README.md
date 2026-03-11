@@ -1,4 +1,4 @@
-# goodreads-web
+# goodreads-todoist-web
 
 A local web app to visualize and prioritize your Goodreads reading list, with an annual reading plan calculator and automatic Todoist task integration.
 
@@ -58,7 +58,7 @@ The companion script `reading_plan_todoist.py` (meant to run as a daily cron at 
 ### Installation
 
 ```bash
-git clone https://github.com/jlaracena/goodreads-web.git
+git clone https://github.com/jlaracena/goodreads-todoist-web.git
 cd goodreads-web
 
 python3 -m venv venv
