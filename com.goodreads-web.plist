@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.jinshi.goodreads</string>
+  <string>com.goodreads-web</string>
   <key>ProgramArguments</key>
   <array>
     <string>/Users/jinshi/Code/goodreads-web/venv/bin/python</string>

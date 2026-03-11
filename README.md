@@ -73,8 +73,8 @@ Luego abrir `http://localhost:8766` (o `http://<ip-del-servidor>:8766` desde otr
 El repo incluye un archivo `com.jinshi.goodreads.plist` de ejemplo para `launchd` (macOS). Ajusta las rutas al directorio del proyecto y al Python del virtualenv, luego:
 
 ```bash
-cp com.jinshi.goodreads.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.jinshi.goodreads.plist
+cp com.goodreads-web.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.goodreads-web.plist
 ```
 
 Logs en `/tmp/goodreads-web.log`.
