@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.jinshi.goodreads</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/jinshi/Code/goodreads-web/venv/bin/python</string>
+    <string>/Users/jinshi/Code/goodreads-web/manage.py</string>
+    <string>runserver</string>
+    <string>0.0.0.0:8766</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/jinshi/Code/goodreads-web</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/goodreads-web.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/goodreads-web.log</string>
+</dict>
+</plist>
