@@ -149,8 +149,9 @@ def plan(request):
     today = datetime.now()
     end_date = datetime(today.year, 12, 31, 23, 59)
 
-    books_read = int(request.GET.get("books_read", 2))
-    goal = int(request.GET.get("goal", 24))
+    params = request.POST if request.method == "POST" else request.GET
+    books_read = int(params.get("books_read", 2))
+    goal = int(params.get("goal", 24))
 
     books_remaining = goal - books_read
     days_remaining = (end_date - today).days
@@ -178,31 +179,45 @@ def plan(request):
             "deadline": date.strftime("%d-%m-%Y"),
         })
 
-    current_pages = int(request.GET.get("current_pages", 0))
-    pages_read = int(request.GET.get("pages_read", 0))
-    progress_pct = float(request.GET.get("progress_pct", 0))
+    current_book  = params.get("current_book", "").strip()
+    current_pages = int(params.get("current_pages", 0))
+    pages_read    = int(params.get("pages_read", 0))
+    progress_pct  = float(params.get("progress_pct", 0))
 
-    pages_per_day = pct_per_day = None
+    pages_per_day = pct_per_day = run_msg = None
     if days_per_book > 0:
+        state = _load_reading_state()
         if current_pages > 0:
             pages_remaining = current_pages - pages_read
             pages_per_day = round(pages_remaining / days_per_book, 1)
-            pct_per_day = round(pages_remaining / current_pages / days_per_book * 100, 1)
-            # Guardar ritmo automáticamente en reading_state
-            state = _load_reading_state()
-            state["total_pages"]    = current_pages
-            state["pages_per_day"]  = pages_per_day
-            state["use_percentage"] = False
-            state["goal"]           = goal
-            _save_reading_state(state)
+            pct_per_day   = round(pages_remaining / current_pages / days_per_book * 100, 1)
+            state.update({"total_pages": current_pages, "pages_per_day": pages_per_day,
+                          "use_percentage": False, "goal": goal})
         elif 0 < progress_pct < 100:
             pct_per_day = round((100 - progress_pct) / days_per_book, 1)
-            state = _load_reading_state()
-            state["total_pages"]    = 0
-            state["pages_per_day"]  = pct_per_day
-            state["use_percentage"] = True
-            state["goal"]           = goal
+            state.update({"total_pages": 0, "pages_per_day": pct_per_day,
+                          "use_percentage": True, "goal": goal})
+        if current_book:
+            state["current_book"] = current_book
+            state["task_id"] = None
+        if pages_per_day or pct_per_day:
             _save_reading_state(state)
+
+    # Ejecutar script si viene acción POST
+    if request.method == "POST" and request.POST.get("action") == "run":
+        try:
+            env = os.environ.copy()
+            env["TODOIST_TOKEN"] = config("TODOIST_TOKEN")
+            result = subprocess.run(
+                ["/opt/homebrew/bin/python3", str(READING_SCRIPT)],
+                capture_output=True, text=True, timeout=30, env=env
+            )
+            run_msg = ("success", result.stdout.strip()) if result.returncode == 0 \
+                      else ("danger", result.stderr.strip())
+        except Exception as e:
+            run_msg = ("danger", str(e))
+
+    reading_state = _load_reading_state()
 
     return render(request, "books/plan.html", {
         "active_tab": "plan",
@@ -215,11 +230,14 @@ def plan(request):
         "days_remaining": days_remaining,
         "days_per_book": round(days_per_book, 1),
         "schedule": schedule,
+        "current_book": current_book or reading_state.get("current_book", ""),
         "current_pages": current_pages,
         "pages_read": pages_read,
         "progress_pct": progress_pct,
         "pages_per_day": pages_per_day,
         "pct_per_day": pct_per_day,
+        "reading_state": reading_state,
+        "run_msg": run_msg,
     })
 
 

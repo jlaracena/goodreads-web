@@ -2,27 +2,27 @@
 {% block content %}
 <h4 class="mb-3">Plan de lectura {{ goal }} libros — 2026</h4>
 
+{% if run_msg %}
+<div class="alert alert-{{ run_msg.0 }} alert-dismissible fade show" role="alert">
+  {{ run_msg.1 }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
 {% if pace_status == "behind" %}
 <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
   <span style="font-size:1.5rem">📚</span>
-  <div>
-    Vas <strong>{{ books_diff }} libro{{ books_diff|pluralize:"s" }} atrasado</strong> respecto al ritmo esperado (deberías llevar {{ expected_books }}).
-    ¡Igual puedes recuperarlo, solo necesitas leer un poco más seguido!
-  </div>
+  <div>Vas <strong>{{ books_diff }} libro{{ books_diff|pluralize:"s" }} atrasado</strong> respecto al ritmo esperado (deberías llevar {{ expected_books }}). ¡Igual puedes recuperarlo!</div>
 </div>
 {% elif pace_status == "ahead" %}
 <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
   <span style="font-size:1.5rem">🚀</span>
-  <div>
-    Vas <strong>{{ books_diff }} libro{{ books_diff|pluralize:"s" }} adelantado</strong> respecto al ritmo esperado. ¡Excelente ritmo, sigue así!
-  </div>
+  <div>Vas <strong>{{ books_diff }} libro{{ books_diff|pluralize:"s" }} adelantado</strong>. ¡Excelente ritmo, sigue así!</div>
 </div>
 {% else %}
 <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
   <span style="font-size:1.5rem">✅</span>
-  <div>
-    Vas <strong>al día</strong> con tu meta. ¡Buen ritmo!
-  </div>
+  <div>Vas <strong>al día</strong> con tu meta. ¡Buen ritmo!</div>
 </div>
 {% endif %}
 
@@ -30,7 +30,7 @@
   <div class="col-md-5">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h6 class="card-title text-muted">Ajustar parámetros</h6>
+        <h6 class="card-title text-muted">Parámetros</h6>
         <form method="get" action="{% url 'plan' %}">
           <div class="mb-2">
             <label class="form-label form-label-sm">Libros leídos</label>
@@ -42,6 +42,10 @@
           </div>
           <hr>
           <p class="text-muted small mb-2">Libro actual <span class="text-muted">(opcional)</span></p>
+          <div class="mb-2">
+            <label class="form-label form-label-sm">Nombre del libro</label>
+            <input type="text" name="current_book" value="{{ current_book }}" class="form-control form-control-sm" placeholder="ej: AI Engineering">
+          </div>
 
           <div class="btn-group btn-group-sm w-100 mb-3" role="group">
             <input type="radio" class="btn-check" name="mode" id="mode-pages" value="pages" {% if not progress_pct %}checked{% endif %} autocomplete="off">
@@ -123,9 +127,33 @@
     </div>
 
     {% if pages_per_day or pct_per_day %}
-    <div class="text-muted small mt-1">✅ Ritmo guardado en libro actual</div>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <p class="mb-0 small text-muted">Libro guardado</p>
+            <p class="mb-0 fw-bold">📖 {{ reading_state.current_book }}</p>
+          </div>
+          {% if reading_state.task_id %}
+          <span class="badge bg-success">Tarea activa en Todoist</span>
+          {% else %}
+          <span class="badge bg-warning text-dark">Sin tarea Todoist</span>
+          {% endif %}
+        </div>
+        <form method="post" action="{% url 'plan' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="run">
+          <input type="hidden" name="books_read" value="{{ books_read }}">
+          <input type="hidden" name="goal" value="{{ goal }}">
+          <input type="hidden" name="current_book" value="{{ current_book }}">
+          <input type="hidden" name="current_pages" value="{{ current_pages }}">
+          <input type="hidden" name="pages_read" value="{{ pages_read }}">
+          <input type="hidden" name="progress_pct" value="{{ progress_pct }}">
+          <button type="submit" class="btn btn-sm btn-outline-dark w-100 mt-2">▶ Ejecutar en Todoist ahora</button>
+        </form>
+      </div>
+    </div>
     {% endif %}
-
   </div>
 </div>
 
