@@ -17,15 +17,33 @@
             <input type="number" name="goal" value="{{ goal }}" class="form-control form-control-sm" min="1">
           </div>
           <hr>
-          <p class="text-muted small mb-2">Libro actual (opcional, para calcular páginas/día)</p>
-          <div class="mb-2">
-            <label class="form-label form-label-sm">Total de páginas del libro</label>
-            <input type="number" name="current_pages" value="{{ current_pages }}" class="form-control form-control-sm" min="0">
+          <p class="text-muted small mb-2">Libro actual <span class="text-muted">(opcional)</span></p>
+
+          <div class="btn-group btn-group-sm w-100 mb-3" role="group">
+            <input type="radio" class="btn-check" name="mode" id="mode-pages" value="pages" {% if not progress_pct %}checked{% endif %} autocomplete="off">
+            <label class="btn btn-outline-secondary" for="mode-pages">Por páginas</label>
+            <input type="radio" class="btn-check" name="mode" id="mode-pct" value="pct" {% if progress_pct %}checked{% endif %} autocomplete="off">
+            <label class="btn btn-outline-secondary" for="mode-pct">Por porcentaje</label>
           </div>
-          <div class="mb-3">
-            <label class="form-label form-label-sm">Páginas ya leídas</label>
-            <input type="number" name="pages_read" value="{{ pages_read }}" class="form-control form-control-sm" min="0">
+
+          <div id="fields-pages" {% if progress_pct %}style="display:none"{% endif %}>
+            <div class="mb-2">
+              <label class="form-label form-label-sm">Total de páginas del libro</label>
+              <input type="number" name="current_pages" value="{{ current_pages }}" class="form-control form-control-sm" min="0">
+            </div>
+            <div class="mb-3">
+              <label class="form-label form-label-sm">Páginas ya leídas</label>
+              <input type="number" name="pages_read" value="{{ pages_read }}" class="form-control form-control-sm" min="0">
+            </div>
           </div>
+
+          <div id="fields-pct" {% if not progress_pct %}style="display:none"{% endif %}>
+            <div class="mb-3">
+              <label class="form-label form-label-sm">Porcentaje leído (%)</label>
+              <input type="number" name="progress_pct" value="{{ progress_pct }}" class="form-control form-control-sm" min="0" max="99" step="0.1" placeholder="ej: 35">
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-sm btn-dark w-100">Calcular</button>
         </form>
       </div>
@@ -98,4 +116,16 @@
     </tbody>
   </table>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('input[name="mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const isPct = radio.value === 'pct';
+      document.getElementById('fields-pages').style.display = isPct ? 'none' : '';
+      document.getElementById('fields-pct').style.display = isPct ? '' : 'none';
+    });
+  });
+</script>
 {% endblock %}

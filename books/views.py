@@ -145,8 +145,6 @@ def plan(request):
 
     books_read = int(request.GET.get("books_read", 2))
     goal = int(request.GET.get("goal", 24))
-    current_pages = int(request.GET.get("current_pages", 0))
-    pages_read = int(request.GET.get("pages_read", 0))
 
     books_remaining = goal - books_read
     days_remaining = (end_date - today).days
@@ -161,11 +159,20 @@ def plan(request):
             "deadline": date.strftime("%d-%m-%Y"),
         })
 
+    current_pages = int(request.GET.get("current_pages", 0))
+    pages_read = int(request.GET.get("pages_read", 0))
+    progress_pct = float(request.GET.get("progress_pct", 0))
+
     pages_per_day = pct_per_day = None
-    if current_pages > 0 and days_per_book > 0:
-        pages_remaining = current_pages - pages_read
-        pages_per_day = round(pages_remaining / days_per_book, 1)
-        pct_per_day = round(pages_remaining / current_pages / days_per_book * 100, 1)
+    if days_per_book > 0:
+        if current_pages > 0:
+            # Modo páginas
+            pages_remaining = current_pages - pages_read
+            pages_per_day = round(pages_remaining / days_per_book, 1)
+            pct_per_day = round(pages_remaining / current_pages / days_per_book * 100, 1)
+        elif 0 < progress_pct < 100:
+            # Modo porcentaje: solo calcula % por día
+            pct_per_day = round((100 - progress_pct) / days_per_book, 1)
 
     return render(request, "books/plan.html", {
         "active_tab": "plan",
@@ -177,6 +184,7 @@ def plan(request):
         "schedule": schedule,
         "current_pages": current_pages,
         "pages_read": pages_read,
+        "progress_pct": progress_pct,
         "pages_per_day": pages_per_day,
         "pct_per_day": pct_per_day,
     })
